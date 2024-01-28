@@ -1,9 +1,47 @@
-# My Submission for Wolt 2021 Internship Application
+### Task Description:
+`restaurants.json` in the repository contains one hundred restaurants from the Helsinki area.
 
-## Preliminary Assignment for Engineering Position - Backend Development Intern
+Task is to create an API endpoint /discovery that takes coordinates of the customer as an input and then returns a page (JSON response) containing most popular, newest and nearby restaurants (based on given coordinates).
 
-### For Problem Description, please refer to https://github.com/woltapp/summer2021-internship (subtopics - Overview, Restaurant-object, Backend assignment)
+Location of a customer needs to be provided as request parameters lat (latitude) and lon (longitude), e.g. /discovery?lat=60.1709&lon=24.941. Both parameters accept float values.
 
+An JSON object returned by the /discovery -endpoint has the following structure:
+
+```
+{
+   "sections": [
+      {
+           "title": "Popular Restaurants",
+           "restaurants": [.. add max 10 restaurant objects..]
+      },
+      {
+           "title": "New Restaurants",
+           "restaurants": [..add max 10 restaurant objects..]
+      },
+ 	{
+           "title": "Nearby Restaurants",
+           "restaurants": [.. add max 10 restaurant objects..]
+      }
+
+   ]
+}
+```
+
+For each restaurants-list, there are maximum 10 restaurant objects returned. A list can also contain fewer restaurants (or even be empty) if there are not enough objects matching given conditions. A section with an empty restaurants-list is removed from the response.
+
+There are two main rules followed:
+
+All restaurants returned by the endpoint are closer than 1.5 kilometers from given coordinates, measured as a straight line between coordinates and the location of the restaurant.
+Open restaurants (online=true) are more important than closed ones. Every list is first populated with open restaurants, and closed ones are added only if there is still capacity left.
+In addition each list has a specific sorting rule:
+
+“Popular Restaurants”: highest popularity value first (descending order)
+“New Restaurants”: Newest launch_date first (descending). This list has also a special rule: launch_date must be no older than 4 months.
+“Nearby Restaurants”: Closest to the given location first (ascending).
+
+The same restaurant can obviously be in multiple lists (if it matches given criteria).
+
+----------
 
 This file is divided into 2 main sections:  
 The first section deals with the details of my work, whereas the second section deals with the 'HOW' to get the code up and running.
@@ -38,7 +76,7 @@ To understand the details, please refer to the code which is commented enough to
 The following is being done:
 1. A Python image is pulled.
 2. The Working directory is set to `/usr/app`
-3. All the contents from the `wolt-summer-backend` folder are copied to the working directory.
+3. All the contents from the project folder are copied to the working directory.
 4. Dependencies in the `requirements.txt` are installed.
 5. The port number 5000 is exposed.
 6. Environment variable `FLASK_APP` is set to `app.py`.
@@ -47,7 +85,7 @@ The following is being done:
 ##### 5. _docker-compose.yaml_ contents
 There are two services configured here - _backend_ and _mongo_.
 
-A container `flaskbackend` is to be created using `backend`'s configuration and join the network `wolt-summer-backend_default`. This container has `HOST_PORT` as 5000 and `CONTAINER_PORT` as 5000. The `backend` service, however depends on `mongo` service. The `mongo` service is configured with the container name as `mongo`, which is also to join the default network. This container has `HOST_PORT` as 1048 and `CONTAINER_PORT` as 27017.  
+A container `flaskbackend` is to be created using `backend`'s configuration. This container has `HOST_PORT` as 5000 and `CONTAINER_PORT` as 5000. The `backend` service, however depends on `mongo` service. The `mongo` service is configured with the container name as `mongo`, which is also to join the default network. This container has `HOST_PORT` as 1048 and `CONTAINER_PORT` as 27017.  
 
 ##### 6. _requirements.txt_ contents
 This files includes all the modules and the fixed version dependencies
@@ -75,6 +113,6 @@ In case the device on which my code is being tested on does not have any/all of 
 Once the required software tools are present, the following needs to be carried out:
 1. Extract the compressed folder submitted by me to a location of your choice.
 2. Depending on the OS you are working on, open the respective command line interface.
-3. On the command line interface, navigate to the extracted folder i.e. to the inside of _wolt-summer-backend_ folder.
+3. On the command line interface, navigate to the extracted folder.
 4. Run the command `docker-compose up`. After a while, the services get started. Something similar to `flaskbackend |  * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)` will be prompted on the command line interface.
 5. Open the Postman app. With request type set to **GET**, type the URL in the format `http://localhost:5000/discovery?lat=xxxx&lon=xxxx`, where `xxxx` denotes any floating point number.  Hit **Send**, and you can view the output below. Make sure to select the _Pretty_ and _JSON_ options to view the output clearly. If the request is proper, the response status will be 200 and you can view the results. But if the URL is a bad request i.e. if _lat_ and/or _lon_ are mispelled/non-existent, and/or the `xxxx` value(s) are not floating point numbers, and/or `xxxx` is out of bound value(s) for latitude and/or longitude, a JSON error message with response code 400 will be displayed.
